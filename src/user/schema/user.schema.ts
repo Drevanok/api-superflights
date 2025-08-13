@@ -4,7 +4,7 @@ export const UserSchema = new mongoose.Schema({
     name: {type: String, required: true, minlength: 3, maxlength: 30},
     username: {type: String, required: true, minlength: 3, maxlength: 8},
     email: {type: String, required: true, minlength: 3, maxlength: 50},
-    password: {type: String, required: true, minlength: 6, maxlength: 12},
+    password: {type: String, required: true},
 },
 {
     timestamps: true,
