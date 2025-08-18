@@ -10,13 +10,20 @@ import { Model } from 'mongoose';
 export class UserService {
   constructor(@InjectModel(USER.name) private readonly model: Model<IUser>) {}
 
+  async checkPassword(password: string, passwordDB: string): Promise<Boolean> {
+    return await bcrypt.compare(password, passwordDB);
+  }
+  async findByUsername(username: string) {
+    return await this.model.findOne({ username });
+  }
+
   async hashPassword(password: string): Promise<string> {
     const salt = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salt);
   }
 
   async createUser(userDto: UserDTO): Promise<IUser> {
-    const {username, email, password } = userDto;
+    const { username, email, password } = userDto;
 
     const emailExist = await this.model.findOne({ email });
     if (emailExist) {
@@ -38,7 +45,7 @@ export class UserService {
   async findAllUsers(): Promise<IUser[]> {
     const users = await this.model.find();
 
-    if(!users || users.length === 0 ){
+    if (!users || users.length === 0) {
       throw new Error('No users found');
     }
 
@@ -54,24 +61,24 @@ export class UserService {
   }
 
   async updateUser(id: string, userDto: UserDTO): Promise<IUser> {
-    const {username, email, password} = userDto;
+    const { username, email, password } = userDto;
     const hash = await this.hashPassword(password);
 
     const userExists = await this.model.findById(id);
     if (!userExists) {
       throw new Error('User not found');
-    };
+    }
 
     //check if email or username already exists
-    const emailExist = await this.model.findOne({email});
-    if(emailExist && emailExist.id !== id){
-        throw new Error('Email already exists');
-    };
-    
-    const userNameExist = await this.model.findOne({username});
-    if(userNameExist && userNameExist.id !== id){
-        throw new Error('Username already exists');
-    };
+    const emailExist = await this.model.findOne({ email });
+    if (emailExist && emailExist.id !== id) {
+      throw new Error('Email already exists');
+    }
+
+    const userNameExist = await this.model.findOne({ username });
+    if (userNameExist && userNameExist.id !== id) {
+      throw new Error('Username already exists');
+    }
 
     const user = { ...userDto, password: hash };
     const userUpdate = await this.model.findByIdAndUpdate(id, user, {
@@ -80,18 +87,17 @@ export class UserService {
 
     if (!userUpdate) {
       throw new HttpException('Error updating user', HttpStatus.NOT_FOUND);
-    } 
+    }
 
     return userUpdate;
   }
 
   async deleteUser(id: string) {
     const user = await this.model.findByIdAndDelete(id);
-    if(!user){
-        throw new Error('User not found');
+    if (!user) {
+      throw new Error('User not found');
     }
 
     return { status: HttpStatus.OK, message: 'User deleted successfully' };
-    
   }
-} 
+}
