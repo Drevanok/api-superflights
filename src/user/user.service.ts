@@ -36,7 +36,13 @@ export class UserService {
   }
 
   async findAllUsers(): Promise<IUser[]> {
-    return await this.model.find();
+    const users = await this.model.find();
+
+    if(!users || users.length === 0 ){
+      throw new Error('No users found');
+    }
+
+    return users;
   }
 
   async findOne(id: string): Promise<IUser> {
@@ -48,8 +54,13 @@ export class UserService {
   }
 
   async updateUser(id: string, userDto: UserDTO): Promise<IUser> {
-    const {name, username, email, password} = userDto;
+    const {username, email, password} = userDto;
     const hash = await this.hashPassword(password);
+
+    const userExists = await this.model.findById(id);
+    if (!userExists) {
+      throw new Error('User not found');
+    };
 
     //check if email or username already exists
     const emailExist = await this.model.findOne({email});
@@ -68,7 +79,7 @@ export class UserService {
     });
 
     if (!userUpdate) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Error updating user', HttpStatus.NOT_FOUND);
     } 
 
     return userUpdate;
