@@ -10,3 +10,4 @@ export class timeoutInterceptor implements NestInterceptor {
     return next.handle().pipe(timeout(120000));
   }
 }
+

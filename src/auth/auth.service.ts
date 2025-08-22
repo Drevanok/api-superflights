@@ -20,7 +20,7 @@ export class AuthService {
       user.password,
     );
 
-    if (isValidPass) return user;
+    if (user && isValidPass) return user;
 
     return null;
   }
